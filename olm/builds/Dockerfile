@@ -1,16 +1,28 @@
-FROM container-registry.oracle.com/os/oraclelinux:8
-COPY rpms /tmp/
-RUN dnf install -y /tmp/*.rpm &&\
-    dnf clean all &&\
-    rm -rf /var/cache/yum/* /tmp/*.rpm
+FROM container-registry.oracle.com/os/oraclelinux:8 as builder
+
+WORKDIR $GOPATH/src/github.com/oracle-cne/configmap-reload
+
+RUN dnf which git -y && \
+    dnf install golang -y && \
+    dnf clean all && \
+    rm -rf /var/cache/yum/*
+
+COPY . $GOPATH/src/github.com/oracle-cne/configmap-reload
+
+RUN sh olm/go-build.sh
+
+# -----------------------------------------------------------------------------
 
 FROM container-registry.oracle.com/os/oraclelinux:8-slim
 
-COPY --from=0 /usr/share/licenses/configmap-reload /usr/share/licenses/configmap-reload
-COPY --from=0 /usr/bin/configmap-reload /usr/bin/configmap-reload
-RUN microdnf clean all &&\
-    rm -rf /var/cache/yum/* &&\
-    test -d /LICENSES || ln -s /usr/share/licenses /LICENSES
+RUN microdnf update -y && \
+    microdnf clean all && \
+    rm -rf /var/cache/yum/*
+
+COPY LICENSE SECURITY.md THIRD_PARTY_LICENSES.txt /licenses/
+COPY olm/SECURITY.md /licenses/ORACLE_SECURITY.md
+
+COPY --from=builder $GOPATH/src/github.com/oracle-cne/configmap-reload/bin/configmap-reload /usr/bin/configmap-reload
 
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
