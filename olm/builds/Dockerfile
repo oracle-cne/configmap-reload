@@ -26,4 +26,6 @@ COPY --from=builder $GOPATH/src/github.com/oracle-cne/configmap-reload/bin/confi
 
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+USER 65534
+
 ENTRYPOINT  [ "/usr/bin/configmap-reload"]
