@@ -2,7 +2,7 @@ FROM container-registry.oracle.com/os/oraclelinux:8 as builder
 
 WORKDIR $GOPATH/src/github.com/oracle-cne/configmap-reload
 
-RUN dnf which git -y && \
+RUN dnf install which git -y && \
     dnf install golang -y && \
     dnf clean all && \
     rm -rf /var/cache/yum/*
