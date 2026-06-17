@@ -1,15 +1,20 @@
-FROM container-registry.oracle.com/os/oraclelinux:8 as builder
+FROM container-registry.oracle.com/os/oraclelinux:8 AS builder
 
-WORKDIR $GOPATH/src/github.com/oracle-cne/configmap-reload
+ARG GOLANG_VERSION
 
-RUN dnf install gcc glibc-devel -y && \
-    dnf install golang -y && \
+ENV GOPATH=/workspace/go CGO_ENABLED=0 GOTOOLCHAIN=local
+ENV GOPATH_SRC=$GOPATH/src/github.com/oracle-cne/configmap-reload
+WORKDIR $GOPATH_SRC
+
+RUN dnf install --enablerepo=ol8_codeready_builder -y gcc git glibc-devel golang-${GOLANG_VERSION} hostname && \
     dnf clean all && \
-    rm -rf /var/cache/yum/*
+    rm -rf /var/cache/yum/* && \
+    go version
 
-COPY . $GOPATH/src/github.com/oracle-cne/configmap-reload
+COPY . $GOPATH_SRC
 
-RUN sh olm/go-build.sh
+RUN git config --global --add safe.directory $(pwd) && \
+    bash olm/go-build.sh
 
 # -----------------------------------------------------------------------------
 
@@ -22,7 +27,7 @@ RUN microdnf update -y && \
 COPY LICENSE.txt THIRD_PARTY_LICENSES.txt /licenses/
 COPY olm/SECURITY.md /licenses/ORACLE_SECURITY.md
 
-COPY --from=builder $GOPATH/src/github.com/oracle-cne/configmap-reload/bin/configmap-reload /usr/bin/configmap-reload
+COPY --from=builder /workspace/go/src/github.com/oracle-cne/configmap-reload/bin/configmap-reload /usr/bin/configmap-reload
 
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
