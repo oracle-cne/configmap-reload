@@ -36,4 +36,3 @@ Usage of ./out/configmap-reload:
 ### License
 
 This project is [Apache Licensed](LICENSE.txt)
-

@@ -1,0 +1,14 @@
+@Library('olcne-pipeline') _
+import com.oracle.olcne.pipeline.BranchPattern
+
+String version  = "0.15.0"
+String imageTag = "v" + version
+
+imagePipeline(
+  branchPattern: new BranchPattern(master: 'oracle/release/' + version, feature: '(?!^release/.*$)(^.*$)'),
+  containers: [('container-registry.oracle.com/olcne/configmap-reload:' + imageTag ): 'olcne/configmap-reload:' + imageTag],
+  buildScript: "bash olm/build-image.sh",
+  platforms: ['ol8'],
+  architectures: ['x86_64', 'aarch64'],
+  publishImage: true,
+)
