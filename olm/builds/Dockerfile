@@ -6,7 +6,7 @@ ENV GOPATH=/workspace/go CGO_ENABLED=0 GOTOOLCHAIN=local
 ENV GOPATH_SRC=$GOPATH/src/github.com/oracle-cne/configmap-reload
 WORKDIR $GOPATH_SRC
 
-RUN dnf module disable -y go-toolset:ol8 \
+RUN dnf module disable -y go-toolset:ol8 && \
     dnf install --enablerepo=ol8_codeready_builder -y gcc git glibc-devel golang-${GOLANG_VERSION} hostname && \
     dnf clean all && \
     rm -rf /var/cache/yum/* && \
